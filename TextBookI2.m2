@@ -1,0 +1,10 @@
+kk=ZZ/32749
+ringP3=kk[x_0..x_3]
+ringP1=kk[s,t]
+cubicMap = map(ringP1,ringP3,{s^3,s^2*t,s*t^2,t^3})
+idealCubic=kernel cubicMap
+M = matrix{{x_0,x_1,x_2},{x_1,x_2,x_3}}
+idealCubic3=minors(2,M)
+f = vars ringP3
+OmegaP3 = kernel f
+g = generators OmegaP3
