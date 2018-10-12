@@ -9,7 +9,22 @@ QuotientIdeal=(a,b,r)->(
     Q2 = I2: ideal(z^(r+1));
     Q = trim (Q1 + Q2);
     return Q)
-QuotientIdeal(3,4,15)
-InQ= ideal leadTerm Q
-LQ= for r from 8 to 18 list {r, betti res QuotientIdeal(3,4,r), betti res ideal leadTerm QuotientIdeal(3,4,r),ideal leadTerm QuotientIdeal(3,4,r)};
-netList ({{"r","betti res Q", "betti res InQ","InQ"}}|LQ)
+QI=r->QuotientIdeal(3,4,r)
+LQ= for r from 8 to 18 list {{r, 
+betti res QI(r), 
+betti res ideal leadTerm QI(r)},
+{r, ,ideal leadTerm QI(r)}};
+netList ({{"r","betti res Q", "betti res InQ"}}|flatten LQ)
+
+
+
+
+
+
+
+
+
+
+
+
+
