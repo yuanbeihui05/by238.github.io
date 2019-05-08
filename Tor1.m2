@@ -9,7 +9,34 @@ QuotientIdeal=(a,b,r)->(
     Q2 = I2: ideal(z^(r+1));
     Q = trim (Q1 + Q2);
     return Q)
-QuotientIdeal(3,4,15)
-InQ= ideal leadTerm Q
-LQ= for r from 8 to 18 list {r, betti res QuotientIdeal(3,4,r), betti res ideal leadTerm QuotientIdeal(3,4,r),ideal leadTerm QuotientIdeal(3,4,r)};
-netList ({{"r","betti res Q", "betti res InQ","InQ"}}|LQ)
+QI=r->QuotientIdeal(3,4,r)
+
+-- The chart of QI(r)
+LQ= for r from 1 to 30 list {{r, 
+betti res QI(r), 
+betti res ideal leadTerm QI(r)},
+{r,leadTerm gens QI(r) ,ideal leadTerm QI(r)}};
+netList ({{"r","betti res Q", "betti res InQ"}}|flatten LQ)
+
+
+--The chart of V_{r,k}--
+r0=20 -- the max of r
+k0=20 -- the max of k
+DimJ0= for r from 1 to r0 list{{r}| 
+    for k from 1 to k0 list hilbertFunction(k-1, comodule QI(r))};
+netList flatten {{{"r/k"}| for k from 1 to k0 list k}| flatten DimJ0}
+ChartOfV=(r0,k0)->(
+    DimJ0= for r from 1 to r0 list{{r}|
+	for k from 1 to k0 list hilbertFunction(k-1,comodule QI(r))};
+    chart= {{"r/k"}|for k from 1 to k0 list k}|flatten DimJ0;
+    return chart)
+netList ChartOfV(15,15)
+
+
+
+
+
+
+
+
+
