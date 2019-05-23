@@ -29,3 +29,16 @@ for i from 0 to n do P_i=ideal(M_(i,2)*x-M_(i,0)*z,M_(i,2)*y-M_(i,1)*z,M_(i,1)*x
 --Ideal of fat points--
 for r from 0 to 6 do J_r=intersect(for i from 0 to n list (P_i^(r+1)))
 netList for r from 0 to 6 list {r,hilbertSeries J_r}
+
+--For 2-Adj case --
+I1=(k)->(ideal(x,y))^k;
+I2=(k)->(ideal(x,z))^k;
+J1=(k)->(ideal(x^2-z^2,y))^k;
+J2=(k)->(ideal(x,y-z))^k;
+J3=(k)->(ideal(z,x^2-y^2))^k;
+IAd=(k)->(intersect (I1(k)+J1(k),J2(k))+I2(k)+J3(k));
+H0=(d,k)->(hilbertFunction(d,IAd(k))+hilbertFunction(d,J1(k)+I1(k)+J2(k)));
+H1=(d,k)->(hilbertFunction(d,J1(k))+hilbertFunction(d,I1(k))+hilbertFunction(d,J2(k))+hilbertFunction(d,I2(k))+hilbertFunction(d,J3(k)));
+H2=(d,k)->(hilbertFunction(d,intersect(J1(k),I1(k)))+hilbertFunction(d,intersect(I1(k),I2(k),J2(k)))+hilbertFunction(d,intersect(I2(k),J3(k))));
+netList for i from 0 to 7 list for k from 4*i+4 to 5*i+5 list (4*i+3, k, H2(4*i+k+3,k)+H0(4*i+k+3,k)-H1(4*i+k+3,k),H2(4*i+k+3,k),H1(4*i+k+3,k),H0(4*i+k+3,k))
+netList for k from 1 to 7 list {k, gens gb IAd(k)}
