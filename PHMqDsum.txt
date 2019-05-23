@@ -1,0 +1,166 @@
+
++ M2 --no-readline --print-width 165
+Macaulay2, version 1.12
+with packages: ConwayPolynomials, Elimination, IntegralClosure, InverseSystems, LLLBases, PrimaryDecomposition, ReesAlgebra, TangentCone
+
+i1 : R=QQ[z,x,y,MonomialOrder=>Lex]
+
+o1 = R
+
+o1 : PolynomialRing
+
+i2 : NewMM=(k)->{
+         A0=matrix apply(2*k+1,i->(apply(2*k+3,j->(((-1)^(2*k+3+i-j))*binomial(4*k+4,2*k+3+i-j)))));
+         A1=submatrix(A0,,{0..k,k+2..2*k+2});--Adrop in Hal's notes
+         C=transpose gens kernel A1;
+         firstHalf=submatrix(C,,{0..k});
+         secondHalf=submatrix(C,,{k+1..2*k+1});
+         K1=firstHalf|matrix{{0}}|secondHalf;
+         Mat1=A0||K1;
+         K2=transpose gens kernel Mat1;
+         newMat=Mat1||K2;
+         return newMat}
+
+o2 = NewMM
+
+o2 : FunctionClosure
+
+i3 : 
+     NiceMiddle = (k)->(L=NewMM k;
+         R2=QQ[a,b];
+         Rdeg=super basis(2*k+2,R2);
+         gamma=submatrix((L**R2)*transpose Rdeg,{2*k+1,2*k+2},);
+         S1=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(0,0)}},{0,1},{0..0});
+         S2=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(1,0)}},{0,1},{0..0});
+         m23=map(R,R2,matrix{{x,y}});
+         m23(S1|S2))
+
+o3 = NiceMiddle
+
+o3 : FunctionClosure
+
+i4 : NiceSyz = (k,L0,L2)->(NL=NewMM k;
+         R2=QQ[a,b];
+         Rdeg=super basis(2*k+2,R2);
+         gamma=submatrix((NL**R2)*transpose Rdeg,{2*k+1,2*k+2},);
+         S1=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(0,0)}},{0,1},{0..0});
+         S2=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(1,0)}},{0,1},{0..0});
+         m23=map(R,R2,matrix{{L0,L2}});
+         m23(S1|S2))
+
+o4 = NiceSyz
+
+o4 : FunctionClosure
+
+i5 : 
+     PHM=(i,L)->(D=matrix{{0_R,0_R}};
+         E=submatrix(NiceSyz(floor((i-3)/4),L#0,L#2),{1..1},)||D;
+         B=NiceSyz(floor((i-3)/4),L#2,L#4);
+         C=D||submatrix(NiceSyz(floor((i-3)/4),L#4,L#6),{0..0},);
+         M=E|B|C;
+         M1=apply(2,l->(apply(6,j->M_(l,j))));
+         MM1=map(R^{2:(-i-1)},,matrix M1);
+         MM1
+         )
+
+o5 = PHM
+
+o5 : FunctionClosure
+
+i6 : (u,v)=(x+y,x-y);
+
+i7 : L={v-3*z,v-3*z-2*u,2*u,2*u-2*v,2*v,u-3*z-2*v,u-3*z}
+
+o7 = {- 3z + x - y, - 3z - x - 3y, 2x + 2y, 4y, 2x - 2y, - 3z - x + 3y, - 3z + x + y}
+
+o7 : List
+
+i8 : Dsum=(r,L)->(submatrix (PHM(r,L),{0..0},{0..3})++ submatrix (PHM(r,L),{1..1},{2..5}));
+
+i9 : netList for k from 0 to 3 list (reduceHilbert hilbertSeries prune coker (Syz1v1(4*k+3)|Syz1v2(4*k+3)))
+stdio:43:74:(3):[3]: error: no method for adjacent objects:
+--            Syz1v1 (of class Symbol)
+--    SPACE   3 (of class ZZ)
+
+i10 : Syz1v1=(r)->(syz submatrix(PHM(r,L),{0..0},{0..3})++id_(R^2))
+
+o10 = Syz1v1
+
+o10 : FunctionClosure
+
+i11 : Syz1v2=(r)->(id_(R^2)++(syz submatrix(PHM(r,L),{1..1},{2..5})))
+
+o11 = Syz1v2
+
+o11 : FunctionClosure
+
+i12 : netList for k from 0 to 3 list (reduceHilbert hilbertSeries prune coker (Syz1v1(4*k+3)|Syz1v2(4*k+3)))
+
+      +---------------------------------------------------------------------+
+      |2 + 2T                                                               |
+o12 = |------                                                               |
+      |   1                                                                 |
+      +---------------------------------------------------------------------+
+      |            2      3     4                                           |
+      |2 + 6T + 12T  + 12T  + 2T                                            |
+      |--------------------------                                           |
+      |             1                                                       |
+      +---------------------------------------------------------------------+
+      |            2      3      4      5      6     7                      |
+      |2 + 6T + 12T  + 20T  + 30T  + 30T  + 16T  + 2T                       |
+      |-----------------------------------------------                      |
+      |                       1                                             |
+      +---------------------------------------------------------------------+
+      |            2      3      4      5      6      7      8      9     10|
+      |2 + 6T + 12T  + 20T  + 30T  + 42T  + 56T  + 56T  + 38T  + 18T  + 2T  |
+      |---------------------------------------------------------------------|
+      |                                  1                                  |
+      +---------------------------------------------------------------------+
+
+i13 : netList for k from 4 to 5 list (reduceHilbert hilbertSeries prune coker (Syz1v1(4*k+3)|Syz1v2(4*k+3)))
+
+      +-------------------------------------------------------------------------------------------------------------------------+
+      |            2      3      4      5      6      7      8      9      10      11      12     13                            |
+      |2 + 6T + 12T  + 20T  + 30T  + 42T  + 56T  + 72T  + 90T  + 90T  + 68T   + 44T   + 18T   + 2T                              |
+o13 = |---------------------------------------------------------------------------------------------                            |
+      |                                              1                                                                          |
+      +-------------------------------------------------------------------------------------------------------------------------+
+      |            2      3      4      5      6      7      8       9       10       11       12      13      14      15     16|
+      |2 + 6T + 12T  + 20T  + 30T  + 42T  + 56T  + 72T  + 90T  + 110T  + 132T   + 132T   + 106T   + 78T   + 48T   + 18T   + 2T  |
+      |-------------------------------------------------------------------------------------------------------------------------|
+      |                                                            1                                                            |
+      +-------------------------------------------------------------------------------------------------------------------------+
+
+i14 : netList for i from 3 to 3 list for k from 0 to 3 list (betti res prune coker(Syz1v1(4*k+i)|Syz1v2(4*k+i)))
+
+      +--------------+----------------+-----------------+-----------------+
+      |       0 1 2 3|       0  1  2 3|       0  1  2  3|       0  1  2  3|
+o14 = |total: 2 4 4 2|total: 2 12 18 8|total: 2 16 26 12|total: 2 20 32 14|
+      |    0: 2 4 . .|    0: 2  .  . .|    0: 2  .  .  .|    0: 2  .  .  .|
+      |    1: . . 4 2|    1: .  .  . .|    1: .  .  .  .|    1: .  .  .  .|
+      |              |    2: .  8  . .|    2: .  .  .  .|    2: .  .  .  .|
+      |              |    3: .  4 18 6|    3: .  .  .  .|    3: .  .  .  .|
+      |              |    4: .  .  . 2|    4: . 12  .  .|    4: .  .  .  .|
+      |              |                |    5: .  4 14  .|    5: .  .  .  .|
+      |              |                |    6: .  . 12 10|    6: . 16  .  .|
+      |              |                |    7: .  .  .  2|    7: .  4 16  .|
+      |              |                |                 |    8: .  .  6  .|
+      |              |                |                 |    9: .  . 10 12|
+      |              |                |                 |   10: .  .  .  2|
+      +--------------+----------------+-----------------+-----------------+
+
+i15 : netList for k from 0 to 4 list for i from (4*k+3) to 9*k+8 list (hilbertFunction(i,cokernel PHM(4*k+3,L))-hilbertFunction(i,cokernel Dsum(4*k+3,L)))
+
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+o15 = |0|0|0|2|2|0| |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  | | |
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+      |0|0|0|0|0|2|6|12|12|2 |0 |  |  |  |  |  |  |  |  |  |  |  |  |  | | |
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+      |0|0|0|0|0|0|0|2 |6 |12|20|30|30|16|2 |0 |  |  |  |  |  |  |  |  | | |
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+      |0|0|0|0|0|0|0|0 |0 |2 |6 |12|20|30|42|56|56|38|18|2 |0 |  |  |  | | |
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+      |0|0|0|0|0|0|0|0 |0 |0 |0 |2 |6 |12|20|30|42|56|72|90|90|68|44|18|2|0|
+      +-+-+-+-+-+-+-+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+-+-+
+
+i16 : 

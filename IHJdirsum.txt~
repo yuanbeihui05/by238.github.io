@@ -1,0 +1,325 @@
+
++ M2 --no-readline --print-width 165
+Macaulay2, version 1.12
+with packages: ConwayPolynomials, Elimination, IntegralClosure, InverseSystems, LLLBases, PrimaryDecomposition, ReesAlgebra, TangentCone
+
+i1 : R=QQ[z,x,y,MonomialOrder=>Lex]
+
+o1 = R
+
+o1 : PolynomialRing
+
+i2 : NewMM=(k)->{
+         A0=matrix apply(2*k+1,i->(apply(2*k+3,j->(((-1)^(2*k+3+i-j))*binomial(4*k+4,2*k+3+i-j)))));
+         A1=submatrix(A0,,{0..k,k+2..2*k+2});--Adrop in Hal's notes
+         C=transpose gens kernel A1;
+         firstHalf=submatrix(C,,{0..k});
+         secondHalf=submatrix(C,,{k+1..2*k+1});
+         K1=firstHalf|matrix{{0}}|secondHalf;
+         Mat1=A0||K1;
+         K2=transpose gens kernel Mat1;
+         newMat=Mat1||K2;
+         return newMat}
+
+o2 = NewMM
+
+o2 : FunctionClosure
+
+i3 : NiceMiddle = (k)->(L=NewMM k;
+         R2=QQ[a,b];
+         Rdeg=super basis(2*k+2,R2);
+         gamma=submatrix((L**R2)*transpose Rdeg,{2*k+1,2*k+2},);
+         S1=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(0,0)}},{0,1},{0..0});
+         S2=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(1,0)}},{0,1},{0..0});
+         m23=map(R,R2,matrix{{x,y}});
+         m23(S1|S2))
+
+o3 = NiceMiddle
+
+o3 : FunctionClosure
+
+i4 : NiceSyz = (k,L0,L2)->(NL=NewMM k;
+         R2=QQ[a,b];
+         Rdeg=super basis(2*k+2,R2);
+         gamma=submatrix((NL**R2)*transpose Rdeg,{2*k+1,2*k+2},);
+         S1=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(0,0)}},{0,1},{0..0});
+         S2=submatrix(syz matrix{{a^(4*k+4),b^(4*k+4),(a-b)^(4*k+4)*gamma_(1,0)}},{0,1},{0..0});
+         m23=map(R,R2,matrix{{L0,L2}});
+         m23(S1|S2))
+
+o4 = NiceSyz
+
+o4 : FunctionClosure
+
+i5 : PHM=(i,L)->(D=matrix{{0_R,0_R}};
+         E=submatrix(NiceSyz(floor((i-3)/4),L#0,L#2),{1..1},)||D;
+         B=NiceSyz(floor((i-3)/4),L#2,L#4);
+         C=D||submatrix(NiceSyz(floor((i-3)/4),L#4,L#6),{0..0},);
+         M=E|B|C;
+         M1=apply(2,l->(apply(6,j->M_(l,j))));
+         MM1=map(R^{2:(-i-1)},R^6,matrix M1);
+         MM1
+         )
+
+o5 = PHM
+
+o5 : FunctionClosure
+
+i6 : (u,v)=(x+y,x-y);
+
+i7 : L={v-3*z,v-3*z-2*u,2*u,2*u-2*v,2*v,u-3*z-2*v,u-3*z}
+
+o7 = {- 3z + x - y, - 3z - x - 3y, 2x + 2y, 4y, 2x - 2y, - 3z - x + 3y, - 3z + x + y}
+
+o7 : List
+
+i8 : FactorMat=(M)->(r1=rank source M;
+         r2=rank target M;
+         apply(r1,i->(apply(r2,j->(factor M_(j,i))))))
+
+o8 = FactorMat
+
+o8 : FunctionClosure
+
+i9 : Syz1v1=(r)->(syz submatrix(PHM(r,L),{0..0},{0..3}++id_(R^2)))
+
+o9 = Syz1v1
+
+o9 : FunctionClosure
+
+i10 : IHJ=(r)->(
+          S1v1=(syz submatrix (PHM(r,L),{0..0},{0..3}))++id_(R^2);
+          S1v2=id_(R^2)++(syz submatrix (PHM(r,L),{1..1},{2..5}));
+          coker submatrix(PHM(r,L)*S1v1,{1..1},))
+
+o10 = IHJ
+
+o10 : FunctionClosure
+
+i11 : Syz1v1=(r)->(syz submatrix(PHM(r,L),{0..0},{0..3})++id_(R^2))
+
+o11 = Syz1v1
+
+o11 : FunctionClosure
+
+i12 : Syz1v1(3)
+
+o12 = | -15z-6x-16y -2x+6y 0          -2xy              -2y2             -6zy-12y2           0 0 |
+      | 15z-2x+8y   2x-6y  0          2xy               2y2              6zy-4y2             0 0 |
+      | -x-21y      6z+4y  -2xy+8y2   24zy+4xy          6zy+4y2          -12zy-18y2          0 0 |
+      | 7x-13y      6z+4y  x2-4xy+5y2 -9zx+15zy-2x2+2xy -3zx+3zy-2xy+2y2 9z2+6zx+6zy+8xy-6y2 0 0 |
+      | 0           0      0          0                 0                0                   1 0 |
+      | 0           0      0          0                 0                0                   0 1 |
+
+              6       8
+o12 : Matrix R  <--- R
+
+i13 : Syz1v1=(r)->(syz submatrix(PHM(r,L),{0..0},{0..3}))
+
+o13 = Syz1v1
+
+o13 : FunctionClosure
+
+i14 : Syz1v1(3)
+
+o14 = | -15z-6x-16y -2x+6y 0          -2xy              -2y2             -6zy-12y2           |
+      | 15z-2x+8y   2x-6y  0          2xy               2y2              6zy-4y2             |
+      | -x-21y      6z+4y  -2xy+8y2   24zy+4xy          6zy+4y2          -12zy-18y2          |
+      | 7x-13y      6z+4y  x2-4xy+5y2 -9zx+15zy-2x2+2xy -3zx+3zy-2xy+2y2 9z2+6zx+6zy+8xy-6y2 |
+
+              4       6
+o14 : Matrix R  <--- R
+
+i15 : Syz1v1=(r)->(syz submatrix(PHM(r,L),{0..0},{0..3})++id_(R^2))
+
+o15 = Syz1v1
+
+o15 : FunctionClosure
+
+i16 : submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{0..(rank target Syz1v1(r))-3})
+stdio:30:33:(3):[1]: error: no method for binary operator - applied to objects:
+--            r (of class Symbol)
+--      -     3 (of class ZZ)
+
+i17 : r=3
+
+o17 = 3
+
+i18 : submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{0..(rank target Syz1v1(r))-3})
+
+o18 = {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 |
+
+              1       4
+o18 : Matrix R  <--- R
+
+i19 : submatrix(Syz1v1(r),,{0..(rank target Syz1v1(r))-3})
+
+o19 = | -15z-6x-16y -2x+6y 0          -2xy              |
+      | 15z-2x+8y   2x-6y  0          2xy               |
+      | -x-21y      6z+4y  -2xy+8y2   24zy+4xy          |
+      | 7x-13y      6z+4y  x2-4xy+5y2 -9zx+15zy-2x2+2xy |
+      | 0           0      0          0                 |
+      | 0           0      0          0                 |
+
+              6       4
+o19 : Matrix R  <--- R
+
+i20 : Syz1v1(3)
+
+o20 = | -15z-6x-16y -2x+6y 0          -2xy              -2y2             -6zy-12y2           0 0 |
+      | 15z-2x+8y   2x-6y  0          2xy               2y2              6zy-4y2             0 0 |
+      | -x-21y      6z+4y  -2xy+8y2   24zy+4xy          6zy+4y2          -12zy-18y2          0 0 |
+      | 7x-13y      6z+4y  x2-4xy+5y2 -9zx+15zy-2x2+2xy -3zx+3zy-2xy+2y2 9z2+6zx+6zy+8xy-6y2 0 0 |
+      | 0           0      0          0                 0                0                   1 0 |
+      | 0           0      0          0                 0                0                   0 1 |
+
+              6       8
+o20 : Matrix R  <--- R
+
+i21 : submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{0..(rank source Syz1v1(r))-3})
+
+o21 = {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 48zxy2+432zy3+32xy3+288y4
+      ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+      144z2xy+576z2y2+96zxy2-96zy3-16x2y2-160xy3-1104y4 |
+
+              1       6
+o21 : Matrix R  <--- R
+
+i22 : submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{(rank source Syz1v1(r))-2..(rank source Syz1v1(r))-1})
+
+o22 = {4} | -45z2+6zx+54zy-x2-2xy-17y2 45z2+18zx-78zy+x2-14xy+33y2 |
+
+              1       2
+o22 : Matrix R  <--- R
+
+i23 : IHJ1=(r)->(submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{0..(rank source Syz1v1(r))-3}))
+
+o23 = IHJ1
+
+o23 : FunctionClosure
+
+i24 : IHJ2=(r)->(submatrix (PHM(r,L),{1..1},)*submatrix(Syz1v1(r),,{(rank source Syz1v1(r))-2..(rank source Syz1v1(r))-1}))
+
+o24 = IHJ2
+
+o24 : FunctionClosure
+
+i25 : IHJ(3)
+
+o25 = cokernel {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 48zxy2+432zy3+32xy3+288y4 144z2xy+576z2y2+96zxy2-96zy3-16x2y2-160xy3-1104y4 -45z2+6zx+54zy-x2-2xy-17y2 45z2+18zx-78zy+x2-14xy+33y2 |
+
+                             1
+o25 : R-module, quotient of R
+
+i26 : IHJ1(3)
+
+o26 = {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 48zxy2+432zy3+32xy3+288y4
+      ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+      144z2xy+576z2y2+96zxy2-96zy3-16x2y2-160xy3-1104y4 |
+
+              1       6
+o26 : Matrix R  <--- R
+
+i27 : IHJ2(3)
+
+o27 = {4} | -45z2+6zx+54zy-x2-2xy-17y2 45z2+18zx-78zy+x2-14xy+33y2 |
+
+              1       2
+o27 : Matrix R  <--- R
+
+i28 : IHJ1(3)|IHJ2(3)
+
+o28 = {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 48zxy2+432zy3+32xy3+288y4
+      ---------------------------------------------------------------------------------------------------------------------------------------------------------------
+      144z2xy+576z2y2+96zxy2-96zy3-16x2y2-160xy3-1104y4 -45z2+6zx+54zy-x2-2xy-17y2 45z2+18zx-78zy+x2-14xy+33y2 |
+
+              1       8
+o28 : Matrix R  <--- R
+
+i29 : coker o28
+
+o29 = cokernel {4} | -8x3-88x2y-472xy2-1672y3 48zx2+288zxy+624zy2+32x2y+192xy2+416y3 640y4 48zx2y+432zxy2+1920zy3+32x2y2+288xy3 48zxy2+432zy3+32xy3+288y4 144z2xy+576z2y2+96zxy2-96zy3-16x2y2-160xy3-1104y4 -45z2+6zx+54zy-x2-2xy-17y2 45z2+18zx-78zy+x2-14xy+33y2 |
+
+                             1
+o29 : R-module, quotient of R
+
+i30 : o29==025
+stdio:67:4:(3): error: attempted to compare module to nonzero integer
+
+i31 : o29==o25
+
+o31 = true
+
+i32 : res coker (IHJ1(3)++IHJ2(3))
+
+       2      6      5      1
+o32 = R  <-- R  <-- R  <-- R  <-- 0
+                                   
+      0      1      2      3      4
+
+o32 : ChainComplex
+
+i33 : netList for i from 3 to 3 list for k from 0 to 3 list (betti res coker(IHJ1(4*k+i)++IHJ2(4*k+i)))
+
+      +--------------+--------------+---------------+----------------+
+      |       0 1 2 3|       0 1 2 3|       0  1 2 3|       0  1  2 3|
+o33 = |total: 2 6 5 1|total: 2 8 7 1|total: 2 10 9 1|total: 2 12 11 1|
+      |    4: 2 . . .|    8: 2 . . .|   12: 2  . . .|   16: 2  .  . .|
+      |    5: . 2 . .|    9: . . . .|   13: .  . . .|   17: .  .  . .|
+      |    6: . 2 1 .|   10: . . . .|   14: .  . . .|   18: .  .  . .|
+      |    7: . 2 2 .|   11: . 2 . .|   15: .  . . .|   19: .  .  . .|
+      |    8: . . 2 .|   12: . . . .|   16: .  . . .|   20: .  .  . .|
+      |    9: . . . 1|   13: . . . .|   17: .  2 . .|   21: .  .  . .|
+      |              |   14: . 4 1 .|   18: .  . . .|   22: .  .  . .|
+      |              |   15: . 2 4 .|   19: .  . . .|   23: .  2  . .|
+      |              |   16: . . . .|   20: .  . . .|   24: .  .  . .|
+      |              |   17: . . . .|   21: .  . . .|   25: .  .  . .|
+      |              |   18: . . 2 .|   22: .  6 1 .|   26: .  .  . .|
+      |              |   19: . . . .|   23: .  2 6 .|   27: .  .  . .|
+      |              |   20: . . . .|   24: .  . . .|   28: .  .  . .|
+      |              |   21: . . . 1|   25: .  . . .|   29: .  .  . .|
+      |              |              |   26: .  . . .|   30: .  8  1 .|
+      |              |              |   27: .  . . .|   31: .  2  8 .|
+      |              |              |   28: .  . 2 .|   32: .  .  . .|
+      |              |              |   29: .  . . .|   33: .  .  . .|
+      |              |              |   30: .  . . .|   34: .  .  . .|
+      |              |              |   31: .  . . .|   35: .  .  . .|
+      |              |              |   32: .  . . .|   36: .  .  . .|
+      |              |              |   33: .  . . 1|   37: .  .  . .|
+      |              |              |               |   38: .  .  2 .|
+      |              |              |               |   39: .  .  . .|
+      |              |              |               |   40: .  .  . .|
+      |              |              |               |   41: .  .  . .|
+      |              |              |               |   42: .  .  . .|
+      |              |              |               |   43: .  .  . .|
+      |              |              |               |   44: .  .  . .|
+      |              |              |               |   45: .  .  . 1|
+      +--------------+--------------+---------------+----------------+
+
+i34 : netList for i from 3 to 3 list for k from 0 to 3 list (betti res IHJ(4*k+i))
+
+      +--------------+---------------+-----------------+-----------------+
+      |       0 1 2 3|       0 1  2 3|       0  1  2  3|       0  1  2  3|
+o34 = |total: 1 4 5 2|total: 1 8 15 8|total: 1 10 21 12|total: 1 12 25 14|
+      |    4: 1 . . .|    8: 1 .  . .|   12: 1  .  .  .|   16: 1  .  .  .|
+      |    5: . 2 . .|    9: . .  . .|   13: .  .  .  .|   17: .  .  .  .|
+      |    6: . 2 3 .|   10: . .  . .|   14: .  .  .  .|   18: .  .  .  .|
+      |    7: . . 2 2|   11: . 2  . .|   15: .  .  .  .|   19: .  .  .  .|
+      |              |   12: . .  . .|   16: .  .  .  .|   20: .  .  .  .|
+      |              |   13: . .  . .|   17: .  2  .  .|   21: .  .  .  .|
+      |              |   14: . 4  1 .|   18: .  .  .  .|   22: .  .  .  .|
+      |              |   15: . 2 14 6|   19: .  .  .  .|   23: .  2  .  .|
+      |              |   16: . .  . 2|   20: .  .  .  .|   24: .  .  .  .|
+      |              |               |   21: .  .  .  .|   25: .  .  .  .|
+      |              |               |   22: .  6  1  .|   26: .  .  .  .|
+      |              |               |   23: .  2  8  .|   27: .  .  .  .|
+      |              |               |   24: .  . 12 10|   28: .  .  .  .|
+      |              |               |   25: .  .  .  2|   29: .  .  .  .|
+      |              |               |                 |   30: .  8  1  .|
+      |              |               |                 |   31: .  2  8  .|
+      |              |               |                 |   32: .  .  6  .|
+      |              |               |                 |   33: .  . 10 12|
+      |              |               |                 |   34: .  .  .  2|
+      +--------------+---------------+-----------------+-----------------+
+
+i35 : 
