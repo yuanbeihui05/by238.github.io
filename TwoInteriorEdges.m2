@@ -18,6 +18,7 @@ export {
     "H0matrix",
     "H0bettiModp",
     "HFModp",
+    "OneTotalInteriorGraph",
     "niceSyzygyMatrix", -- note: only in r == 3 (4) situation so far
     "niceH0Presentation",
     "standardGraph",
@@ -47,6 +48,22 @@ standardGraph = () -> (
         };
     (V,E)
     )
+
+OneTotalInteriorGraph =() -> (
+    -- return a (V, E) pair
+    V := {
+	{-1,0}, {1,0}, --interior vertices
+	{-2,1}, {-2,-1}, --connect to vertex #0
+	{2,-1}, {2,1} --connect to vertex #1
+	};
+    E := {
+	{0,1}, -- the interior edge
+	{0,2}, {0,3}, -- connect to vertex #0
+	{1,4}, {1,5} -- connect to vertex #1 
+	};
+    (V,E)
+    )
+
 
 VEmatrixStandard = () -> (
     -- return the matrix how V-E corresponded in the standardGraph
@@ -201,10 +218,21 @@ R=QQ[x,y,z]
 (V,E) = standardGraph()
 V={{-20,0},{0,-10},{20,0},{-3,-20},{9,20},{0,20},{9,20},{-3,-20}};
 linforms = for e in E list linearForm(e, V, Ring => R);
+r=3
+I = (r)->(ideal for l in linforms list l^(r+1));
 M = niceH0Presentation(6, linforms);
 for d from 54 to 61 list hilbertFunction(d, coker M)
-for r from 1 to 10 list computeCounterexampleModp(r,V,E);
+netList for i from 0 to 10 list reduceHilbert(hilbertSeries I(i+1))
+
+netList for i from 0 to 3 list for d from 6*i+4 to 7*i+6 list hilbertFunction(d,I(4*i+3))
 netList for i from 0 to 9 list for d from 8*i+6 to 9*i+8 list HFModp(d,4*i+3,V,E)
+
+-- TEST 06/04/19
+needsPackage "TwoInteriorEdges"
+R=QQ[x,y,z]
+(V,E) = OneTotalInteriorGraph()
+linforms = for e in E list linearForm(e, V, Ring=> R);
+I = (r) -> (ideal for l in linforms list l^(r+1));
 ///
 
 niceH0Presentation = method()
